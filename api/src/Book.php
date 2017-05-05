@@ -14,16 +14,50 @@ class Book {
         $this->setDescription('');
     }
     
-    public function create(PDO $conn, $author, $title, $description) {
-        
+    public function create(PDO $conn) {
+        $stmt=$conn->prepare('INSERT INTO books SET author=:author, title=:title, description=:description');
+        $result=$stmt->execute([
+           'author' => $this->getAuthor(),
+            'title' => $this->getTitle(),
+            'description'=>$this->getDescription()
+        ]);
+        $insertedId=$conn->lastInsertId();
+        if ($insertedId > 0){
+            $this->id =$insertedId;
+            return [json_encode($this)];
+        }
+        else{
+            return [];
+        }
+
     }
     
-    public function update(PDO $conn, $author, $title, $description) {
+    public function update(PDO $conn, $title) {
+        $id=$this->getId();
+        $stmt=$conn->prepare('UPDATE book SET title=:title WHERE id=:id');
+        $result=$stmt->execute([
+            'id' => $id,
+            'title' => $title
+        ]);
+        if($result === true){
+            return json_encode($this);
+        }else{
+            return [];
+        }
         
     }
     
     public function delete(PDO $conn) {
-        
+        $id=$this->getId();
+        $sql='DELETE FROM books WHERE id=:id';
+        $stmt=$conn->prepare($sql);
+        $result=$stmt->execute(['id'=>$id]);
+        if ($result === true){
+            $this->id = -1;
+            return json_encode($this);
+        }else{
+            return[];
+        }
     }
     
     
@@ -50,8 +84,26 @@ class Book {
     
     //funkcja pobierająca wszystkie wiersze
     static public function loadAllFromDb(PDO $conn){
-        
+        $result = $conn->query('SELECT * FROM books');
+        $books = [];
+
+        //iterumey po rekordach z bazy
+        foreach ($result as $row) {
+            //tworzymy do kazdego rekordu obiekt ksiązki
+            $book = new Book();
+            $book->id = $row['id'];
+            $book->author = $row['author'];
+            $book->title = $row['title'];
+            $book->description = $row['description'];
+
+            //i wrzucamy go do tablicy
+            $books[] =json_encode($book);
+        }
+
+        return $books;
     }
+
+
     
     public function jsonSerialize(){
         //metoda interfejsu
