@@ -46,4 +46,65 @@ $(function () {
             console.log ('Something went wrong');
         });
     });
-}
+    //addingBook
+
+    var addBook=$('#add');
+
+
+    addBook.on('click', function (e) {
+        e.preventDefault();
+        //getting data form fomula on index.php
+        var formula=$(this).parent();
+
+        var author=formula.find('input[name=author]').val();
+        var title= formula.find('input[name=title]').val();
+        var description=formula.find('textarea[name=description]').val();
+
+        //creating object for ajax
+        var data= {};
+
+        data.author=author;
+        data.title=title;
+        data.description=description;
+
+        $.ajax({
+            url:'api/books.php',
+            dataType:'json',//type
+            data: data,//what
+            type: 'POST'//method
+        }).done(function (listOfBooks){
+            var singleBook=JSON.parse(listOfBooks[0]);
+
+            var newLi=$('<div data-id=" '+ singleBook.id + singleBook.title + singleBook.description +' "</div>');
+            divBooks.append(newLi);
+
+            alert("Book added");
+        }).fail(function (){
+            alert ("Book not added");
+        });
+    });
+
+    
+
+    //deleting Book
+
+    divBooks.on('click','button#delete', function (e) {
+        e.preventDefault();
+        var btn = $(this);
+        var id=btn.parent().parent().data('id');
+
+        $.ajax({
+            url: 'api/books.php',
+            dataType:'json',
+            data: 'id=' + id,
+            type: 'DLEETE'
+        }).done(function (success) {
+            if (success){
+                btn.parent().parent().remove();
+            }
+        }).fail(function(){
+            console.log ('Error deleting book');
+        });
+
+    });
+});
