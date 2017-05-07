@@ -19,12 +19,15 @@
         Description:
         <textarea name="description"></textarea>
         <br>
-        <button>Add book</button>
+        <button id="add">Add book</button>
     </form>
 
 
     <p> List of books:</p>
+    <div id="books">
 
+    </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="js/app.js"></script>
 </body>
+</html>
