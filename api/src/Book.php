@@ -17,7 +17,7 @@ class Book {
     public function create(PDO $conn) {
         $stmt=$conn->prepare('INSERT INTO books SET author=:author, title=:title, description=:description');
         $result=$stmt->execute([
-           'author' => $this->getAuthor(),
+            'author' => $this->getAuthor(),
             'title' => $this->getTitle(),
             'description'=>$this->getDescription()
         ]);
@@ -34,11 +34,12 @@ class Book {
     
     public function update(PDO $conn, $title) {
         $id=$this->getId();
-        $stmt=$conn->prepare('UPDATE book SET title=:title WHERE id=:id');
+        $stmt=$conn->prepare('UPDATE books SET title=:title WHERE id=:id');
         $result=$stmt->execute([
             'id' => $id,
             'title' => $title
         ]);
+
         if($result === true){
             return json_encode($this);
         }else{
@@ -54,7 +55,7 @@ class Book {
         $result=$stmt->execute(['id'=>$id]);
         if ($result === true){
             $this->id = -1;
-            return json_encode($this);
+            return [json_encode($this)];
         }else{
             return[];
         }
@@ -68,6 +69,7 @@ class Book {
         
         if ($result && $stmt->rowCount() > 0){
             $row=$stmt->fetch();
+
             //przypisanie własności do nowej książki
             $book= new Book();
             $book->id = $row ['id'];
@@ -75,7 +77,7 @@ class Book {
             $book->title=$row['title'];
             $book->description=$row['description'];
                 //implementujemy interfejs bo nie można zrobić json z obiektu
-            return [json_encode($book)];
+            return $book;
             
         } else {
             return [];
