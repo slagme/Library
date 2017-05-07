@@ -1,39 +1,48 @@
 <?php
 
-//ladujemy niezbędne pliki
-require_once(__DIR__ . '/src/db.php');
-require_once(__DIR__ . '/src/Book.php');
+//ładujemy niezbędne pliki
+require_once(__DIR__ . 'api/src/db.php');
+require_once(__DIR__ . 'api/src/Book.php');
+
 
 //sprawdzamy jakim rodzajem (HTTP) wysłano żądanie
+
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-    $books = [];
+    //tablicę tworzymy po to by sobie to ujednolicić
+    $books=[];
     //sprawdzamy czy przekazano ID
-    if (isset($_GET['id'])) {
-        //pobieramy id ksiązki
+    if (isset($_GET['id'])){
+        //pobieramy id książki
         $id = intval($_GET['id']);
-        $books = Book::loadFromDb($conn, $id);
+        $books=Book::loadAllFromDb($conn, $id);
     } else {
         //pobieramy wszystkie książki
-        $books = Book::loadAllFromDb($conn);
+        $books=Book::loadAllFromDb($conn);
     }
-        //zwracamy jsona
-        echo json_encode($books);
+    
+    //zwracamy tablicę jsona
+    echo json_encode($books);
+} elseif ($_SERVER['REQUEST_METHOD'] == 'POST'){
+    $newbook= new Book();
+    $newbook->setAuthor($_POST['author']);
+    $newbook->setTitle($_POST['title']);
+    $newbook->setDescription($_POST['description']);
 
-    } elseif ($_SERVER['REQUEST_METHOD'] == 'POST') {
-        //tworzymy obiekt nowej książki
-        $newBook = new Book();
-        $newBook->setAuthor($_POST['author']);
-        $newBook->setTitle($_POST['title']);
-        $newBook->setDescription($_POST['description']);
+    $booksArray=$newbook->create($conn);
 
-        $addedBookArray = $newBook->create($conn);
-        //tworzymy json z obieku ksiązki i zwracamy go w tablicy 1 elementowej
-        echo json_encode($addedBookArray);
+    echo json_encode($booksArray);
+    
+} elseif ($_SERVER['REQUEST_METHOD'] == 'PUT') {
+    //pobranie magiczne danych
+    parse_str(file_get_contents("php://input"), $put_vars);
+} elseif ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
+    
+    parse_str(file_get_contents("php://input"), $del_vars);
 
-    } elseif ($_SERVER['REQUEST_METHOD'] == 'PUT') {
+    $id=intval($del_vars['$id']);
+    $deleteBook=Book::loadFromDb($conn, $id);
+    $result=$deleteBook->delete($conn);
 
-        parse_str(file_get_contents("php://input"), $put_vars);
-    } elseif ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
+    echo json_encode($result);
 
-        parse_str(file_get_contents("php://input"), $del_vars);
-    }
+}
