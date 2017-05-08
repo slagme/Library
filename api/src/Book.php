@@ -1,6 +1,6 @@
 <?php
 
-class Book {
+class Book implements JsonSerializable{
     private $id;
     private $title;
     private $author;
@@ -16,12 +16,14 @@ class Book {
     
     public function create(PDO $conn) {
         $stmt=$conn->prepare('INSERT INTO books SET author=:author, title=:title, description=:description');
-        $result=$stmt->execute([
+
+        $stmt->execute([
             'author' => $this->getAuthor(),
             'title' => $this->getTitle(),
             'description'=>$this->getDescription()
         ]);
         $insertedId=$conn->lastInsertId();
+
         if ($insertedId > 0){
             $this->id =$insertedId;
             return [json_encode($this)];
