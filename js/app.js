@@ -10,7 +10,7 @@ $(function () {
         listOfBooks.forEach(function (singleBookJson){
             var singleBook=JSON.parse(singleBookJson);
              //creating new li element with book
-            var newLi=$('<div data-id="' + singleBook.id + '"><li><span class="bookTitle"> '+ singleBook.title + '</span><div class="bookDescription"></div></li>');
+            var newLi=$('<div data-id="' + singleBook.id + '"><li><span class="bookTitle"> '+ singleBook.title + '</span><div class="bookDescription"></div></li><hr>');
             //adding new element to list
             divBooks.append(newLi);
         });
@@ -19,7 +19,7 @@ $(function () {
         console.log('Something went wrong');
     });
 
-    divBooks.on('click', 'span.BookTitle', function () {
+    divBooks.on('click', 'span.bookTitle', function () {
         //getting id from dataset
         var span=$(this);
         var bookId=span.parent().data('id');
@@ -40,12 +40,13 @@ $(function () {
 
             //adding edit button
 
-            var deleteBtn = $('<br> <button id="edit"> Edit</button>');
-            span.next().append(deleteBtn);
+            var editBtn = $('<br> <button id="edit"> Edit</button>');
+            span.next().append(editBtn);
         }).fail(function (){
             console.log ('Something went wrong');
         });
     });
+
     //addingBook
 
     var addBook=$('#add');
@@ -95,6 +96,7 @@ $(function () {
         var btn=$(this);
         var title=btn.parent().parent().find('span').text();
         var editForm=$('<form action="" method="POST" id="editForm"><input type="text" name="titleEdited" value=' + title + '><button id="confirm" type="submit"> Confirm </button></form>');
+        btn.parent().append(editForm);
     });
 
     //book title update
@@ -116,8 +118,11 @@ $(function () {
             dataType: 'json',
             type: 'PUT'
         }).done(function (success){
-            if (success){
-                changedTitle.text(title);
+            if (success) {
+                divBooks.fadeOut(500, function () {
+                    divBooks.fadeIn().delay(1000)
+                    changedTitle.text(title);
+                });
             }
         }).fail(function () {
             alert ('Something went wrong')
@@ -145,6 +150,5 @@ $(function () {
         }).fail(function(){
             console.log ('Error deleting book');
         });
-
     });
 });
